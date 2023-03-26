@@ -1,7 +1,7 @@
 <template>
   <div class="wrap">
-    <div v-for="item in lists" :class="choosen ? 'list-wrap choosen' : 'list-wrap'" :ref="setItemRef"
-      :style="{ '--xPos': x, '--yPos': y }" @click="handleClickListItem">
+    <div v-for="item in lists" :class="item.choosen ? 'list-wrap choosen' : 'list-wrap unchoosen'" :ref="setItemRef"
+      :style="{ '--xPos': x, '--yPos': y }" @click="handleClickListItem(item)">
       <symboldev icon-class="tv" width='30px' height="30px" class="symbol"></symboldev>
       <span :key="item.id" class="list-item-text">{{ item.value }}</span>
     </div>
@@ -10,16 +10,16 @@
 <script setup lang="ts">
 import listType from './type'
 
-import { ref, defineProps, PropType, onMounted, onBeforeUpdate, onUpdated, computed } from 'vue'
+import { ref, defineProps, PropType, onMounted } from 'vue'
 defineProps({
   title: String,
   lists: Array as PropType<listType[]>,
-  choosen: Boolean
 })
+const emits = defineEmits(['listItemClick'])
 let x = ref('50%')
 let y = ref('50%')
 let itemRefs: any = []
- 
+let choosen:boolean = false
 //给每个元素都添加上一个鼠标移动监听事件
 onMounted(() => {
   for (let i in itemRefs) {
@@ -29,23 +29,17 @@ onMounted(() => {
     })
   }
 })
-function handleClickListItem() {
-
+function handleClickListItem(item:listType) {
+  emits('listItemClick',item)
 }
 const setItemRef = (el: any) => {
   itemRefs.push(el)
 }
-const beforeSize = computed(() => {
-  return {
-
-  }
-})
 </script>
 <style scoped lang="less">
 .wrap {
   width: 100%;
 }
-
 .list-wrap {
   padding: 10px 20px;
   display: flex;
@@ -56,25 +50,30 @@ const beforeSize = computed(() => {
   width: calc(100% - 40px);
   margin-bottom: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(90deg, #0162c8; #55e7fc);
+  background: linear-gradient(90deg, #d3d4d9; #fffbfa);
   text-decoration: none;
   position: relative;
   overflow: hidden;
   color: black;
   transition: 0.5s;
-
   .list-item-text {
     position: relative;
     padding-left: 10px;
     z-index: 999;
   }
-
   .symbol {
     z-index: 999;
   }
 }
-
-.list-wrap::before {
+.choosen{
+  background: linear-gradient(90deg, #755bea; #8bd8d2);
+  color: #ffff;
+  text-decoration: underline;
+}
+.unchoosen{
+  transition: all 1s;
+}
+.unchoosen::before {
   position: absolute;
   content: '';
   left: var(--xPos);
@@ -82,7 +81,7 @@ const beforeSize = computed(() => {
   transform: translate(-50%, -50%);
   width: 0px;
   height: 0px;
-  background: linear-gradient(90deg, #755bea; #ff72c0);
+  background: linear-gradient(90deg, #755bea; #8bd8d2);
   border-radius: 50%;
   transition: all 1s;
 }
@@ -92,17 +91,15 @@ const beforeSize = computed(() => {
     width: 0px;
     height: 0px;
   }
-
   100% {
-    height: 400px;
-    width: 400px;
+    height: 500px;
+    width: 500px;
     z-index: 10;
     opacity: 1;
   }
 }
 
-.list-wrap:hover::before {
-  // animation: animate 0.5s linear;
+.unchoosen:hover::before {
   height: 400px;
   width: 400px;
   z-index: 10;
